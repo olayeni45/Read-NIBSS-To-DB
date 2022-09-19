@@ -48,15 +48,14 @@ NIBSSJSONFile.forEach(async (file) => {
   console.log("Inserting transactions to DB");
 
   for (let i = 0; i < jsonArray.length; i++) {
-    const TransactionObject = {
+    let TransactionObject = {
       ...jsonArray[i],
       PRODUCT,
       DIRECTION,
     };
 
-    delete TransactionObject["SN"];
+    const items = Object.values(TransactionObject).slice(1);
 
-    const items = Object.values(TransactionObject);
     const newColumnArray = columns
       .filter((col) => col !== "SN")
       .concat("PRODUCT, DIRECTION");
@@ -70,9 +69,9 @@ NIBSSJSONFile.forEach(async (file) => {
       ")";
 
     if (
-      items.includes("SESSION ID") ||
-      items.includes("ORIGINATOR / BILLER") ||
-      items.includes("AMOUNT")
+      items.includes("'SESSION ID'") ||
+      items.includes("'ORIGINATOR / BILLER'") ||
+      items.includes("'AMOUNT'")
     ) {
       //skip
     } else {

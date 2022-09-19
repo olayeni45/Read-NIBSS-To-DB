@@ -10,6 +10,9 @@ import {
   SecondRegexString,
   ThirdRegex,
   ThirdRegexString,
+  FourthRegex,
+  FifthRegex,
+  SixthRegex
 } from "./regex.js";
 
 dotenv.config();
@@ -103,13 +106,13 @@ const FormatInsertValues = (items) => {
   for (let i = 0; i < items.length; i++) {
     let str = String(items[i]);
 
-    //Session ID
-    if (SessionIDRegex.test(str)) {
-      items[i] = FirstRegexString(str);
-    }
-
-    //First Regex
-    if (FirstRegex.test(str)) {
+    //Session ID & First Regex & Fifth Regex
+    if (
+      SessionIDRegex.test(str) ||
+      FifthRegex.test(str) ||
+      FirstRegex.test(str) ||
+      SixthRegex.test(str)
+    ) {
       items[i] = FirstRegexString(str);
     }
 
@@ -121,6 +124,11 @@ const FormatInsertValues = (items) => {
     //Third Regex
     if (ThirdRegex.test(str)) {
       items[i] = ThirdRegexString(str);
+    }
+
+    //Fouth Regex
+    if (FourthRegex.test(str)) {
+      items[i] = "'" + FirstRegexString(str) + "'";
     }
 
     //Default

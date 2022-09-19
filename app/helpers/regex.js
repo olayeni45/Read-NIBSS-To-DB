@@ -23,13 +23,20 @@ const SecondRegexString = (str) => {
 const ThirdRegex = /^.*'[a-zA-Z]'.*$/i;
 const ThirdRegexString = (str) => {
   return (
-    "'" +
     str.slice(0, str.indexOf("'")) +
     str.slice(str.indexOf("'") + 1, str.indexOf("'") + 2) +
-    str.slice(str.indexOf("'") + 3, str.length) +
-    "'"
+    str.slice(str.indexOf("'") + 3, str.length) 
   );
 };
+
+//Fourth Regex
+const FourthRegex = /^'[a-zA-Z].*$/;
+
+//Fifth Regex
+const FifthRegex = /^.*'[a-zA-Z].*$/i;
+
+//Sixth Regex
+const SixthRegex = /^.*[a-zA-Z]'.*$/i;
 
 export {
   SessionIDRegex,
@@ -39,4 +46,7 @@ export {
   SecondRegexString,
   ThirdRegex,
   ThirdRegexString,
+  FourthRegex, 
+  FifthRegex, 
+  SixthRegex
 };
