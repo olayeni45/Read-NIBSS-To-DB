@@ -29,6 +29,20 @@ const ConnectToSQLDB = async () => {
   }
 };
 
+const InsertToSQLDB = async (InsertStatement, currentItemArray) => {
+  try {
+    await conn.query(InsertStatement, (error, recordSet) => {
+      if (error) {
+        console.log(currentItemArray);
+        console.log(InsertStatement);
+        throw error;
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 await ConnectToSQLDB();
 
 //Looping through each NIBSS file
@@ -75,13 +89,8 @@ NIBSSJSONFile.forEach(async (file) => {
     ) {
       //skip
     } else {
-      conn.query(InsertStatement, (error, recordSet) => {
-        if (error) {
-          console.log(items);
-          console.log(InsertStatement);
-          throw error;
-        }
-      });
+      await InsertToSQLDB(InsertStatement, items);
     }
   }
 });
+
