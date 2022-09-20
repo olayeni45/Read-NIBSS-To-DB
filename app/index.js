@@ -29,12 +29,11 @@ const ConnectToSQLDB = async () => {
   }
 };
 
-const InsertToSQLDB = async (InsertStatement, currentItemArray) => {
+//Insert to DB Function
+const InsertToSQLDB = async (InsertStatement) => {
   try {
     await conn.query(InsertStatement, (error, recordSet) => {
       if (error) {
-        console.log(currentItemArray);
-        console.log(InsertStatement);
         throw error;
       }
     });
@@ -61,6 +60,18 @@ NIBSSJSONFile.forEach(async (file) => {
   console.log("Done");
   console.log("Inserting transactions to DB");
 
+  const newColumnArray = columns
+    .filter((col) => col !== "SN")
+    .concat("PRODUCT")
+    .concat("DIRECTION");
+
+  let TotalInsertValues = ``;
+
+  let BulkInsertValues = [];
+
+  let interval = 1000;
+
+  //Looping through JSON-Array from CSV File
   for (let i = 0; i < jsonArray.length; i++) {
     let TransactionObject = {
       ...jsonArray[i],
@@ -70,27 +81,37 @@ NIBSSJSONFile.forEach(async (file) => {
 
     const items = Object.values(TransactionObject).slice(1);
 
-    const newColumnArray = columns
-      .filter((col) => col !== "SN")
-      .concat("PRODUCT, DIRECTION");
     const FormattedValues = await FormatInsertValues(items);
-
-    const InsertStatement =
-      "INSERT INTO NIBSS(" +
-      newColumnArray +
-      ")\nVALUES (" +
-      FormattedValues +
-      ")";
 
     if (
       items.includes("'SESSION ID'") ||
       items.includes("'ORIGINATOR / BILLER'") ||
-      items.includes("'AMOUNT'")
+      items.includes("'AMOUNT'") ||
+      items.includes("'TRANSACTION TYPE'") ||
+      items.includes("'TRANSACTION VOLUME'") ||
+      items.includes("'TOTAL AMOUNT (N)'")
     ) {
       //skip
     } else {
-      await InsertToSQLDB(InsertStatement, items);
+      if (FormattedValues.length === newColumnArray.length) {
+        TotalInsertValues = TotalInsertValues + `(${FormattedValues}),\n`;
+        if (i === interval) {
+          BulkInsertValues.push([TotalInsertValues]);
+          TotalInsertValues = ``;
+          interval += 1000;
+        }
+      }
     }
   }
-});
 
+  BulkInsertValues.push([TotalInsertValues]);
+
+  for (let i = 0; i < BulkInsertValues.length; i++) {
+    const index = BulkInsertValues[i].toString().lastIndexOf(",");
+    const QueryValue = BulkInsertValues[i].toString().slice(0, index);
+    const InsertStatement = "INSERT INTO NIBSS VALUES\n" + QueryValue;
+    await InsertToSQLDB(InsertStatement);
+  }
+
+  console.log("Done");
+});

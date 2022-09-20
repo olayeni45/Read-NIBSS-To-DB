@@ -7,11 +7,11 @@ const SessionIDRegex = /^'[0-9].*$/;
 
 //First Regex
 const FirstRegex = /^.*'[a-zA-Z] .*$/i;
-const FirstRegexString = (str) => str.replace("'", "");
+const RemovedApostropheString = (str) => str.replace("'", "");
 
 //Second Regex
-const SecondRegex = /^.*''.*$/i;
-const SecondRegexString = (str) => {
+const DoubleApostropheRegex = /^.*''.*$/i;
+const DoubleApostropheRegexString = (str) => {
   return (
     str.slice(0, str.indexOf("'")) +
     " " +
@@ -41,9 +41,9 @@ const SixthRegex = /^.*[a-zA-Z]'.*$/i;
 export {
   SessionIDRegex,
   FirstRegex,
-  FirstRegexString,
-  SecondRegex,
-  SecondRegexString,
+  RemovedApostropheString,
+  DoubleApostropheRegex,
+  DoubleApostropheRegexString,
   ThirdRegex,
   ThirdRegexString,
   FourthRegex, 

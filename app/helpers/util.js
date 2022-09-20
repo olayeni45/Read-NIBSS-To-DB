@@ -4,15 +4,12 @@ import csvtojson from "csvtojson";
 import dotenv from "dotenv";
 import {
   SessionIDRegex,
-  FirstRegex,
-  FirstRegexString,
-  SecondRegex,
-  SecondRegexString,
+  RemovedApostropheString,
+  DoubleApostropheRegex,
+  DoubleApostropheRegexString,
   ThirdRegex,
   ThirdRegexString,
   FourthRegex,
-  FifthRegex,
-  SixthRegex
 } from "./regex.js";
 
 dotenv.config();
@@ -106,19 +103,20 @@ const FormatInsertValues = (items) => {
   for (let i = 0; i < items.length; i++) {
     let str = String(items[i]);
 
+    const noOfApostrophe = str.replace(/[^']/g, "").length;
+
+    const boolRemoveApostrophe =
+      (str.indexOf("'") !== 0 || str.indexOf("'") !== str.length) &&
+      noOfApostrophe === 1;
+
     //Session ID & First Regex & Fifth Regex
-    if (
-      SessionIDRegex.test(str) ||
-      FifthRegex.test(str) ||
-      FirstRegex.test(str) ||
-      SixthRegex.test(str)
-    ) {
-      items[i] = FirstRegexString(str);
+    if (SessionIDRegex.test(str) || boolRemoveApostrophe) {
+      items[i] = RemovedApostropheString(str);
     }
 
     //Second Regex
-    if (SecondRegex.test(str)) {
-      items[i] = SecondRegexString(str);
+    if (DoubleApostropheRegex.test(str)) {
+      items[i] = DoubleApostropheRegexString(str);
     }
 
     //Third Regex
@@ -128,7 +126,7 @@ const FormatInsertValues = (items) => {
 
     //Fouth Regex
     if (FourthRegex.test(str)) {
-      items[i] = "'" + FirstRegexString(str) + "'";
+      items[i] = "'" + RemovedApostropheString(str) + "'";
     }
 
     //Default
