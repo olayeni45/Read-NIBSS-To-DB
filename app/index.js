@@ -1,4 +1,5 @@
 //Imports
+import fs from "fs";
 import sql from "mssql";
 import {
   ssmsConfig,
@@ -30,10 +31,14 @@ const ConnectToSQLDB = async () => {
 };
 
 //Insert to DB Function
-const InsertToSQLDB = async (InsertStatement) => {
+const InsertToSQLDB = async (InsertStatement, index, currentItem) => {
   try {
     await conn.query(InsertStatement, (error, recordSet) => {
       if (error) {
+        fs.writeFile(`InsertError-${index}.txt`, currentItem, (err) => {
+          // In case of a error throw err.
+          if (err) throw err;
+        });
         throw error;
       }
     });
@@ -110,7 +115,7 @@ NIBSSJSONFile.forEach(async (file) => {
     const index = BulkInsertValues[i].toString().lastIndexOf(",");
     const QueryValue = BulkInsertValues[i].toString().slice(0, index);
     const InsertStatement = "INSERT INTO NIBSS VALUES\n" + QueryValue;
-    await InsertToSQLDB(InsertStatement);
+    await InsertToSQLDB(InsertStatement, i, BulkInsertValues[i]);
   }
 
   console.log("Done");
