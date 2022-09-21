@@ -99,7 +99,7 @@ const FormatInsertValues = (items) => {
 };
 
 //SSMS Config
-const timeout = 120_000_000;
+const timeout = 100_000_000;
 const ssmsConfig = {
   server: process.env.HOSTNAME,
   database: process.env.DATABASE_NAME,

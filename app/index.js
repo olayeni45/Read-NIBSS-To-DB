@@ -57,73 +57,96 @@ const InsertBulkTransactionToDB = async (BulkTransactionArray) => {
 await ConnectToSQLDB();
 
 //Looping through each NIBSS file
-NIBSSJSONFile.forEach(async (file) => {
-  console.log("--------------------------------------------------");
+const delay = 300_000;
+const timer = (ms) => new Promise((res) => setTimeout(res, ms));
 
-  const { Product: PRODUCT, Direction: DIRECTION, File: NIBSSFILE } = file;
+async function LoopFiles() {
+  for (let i = 0; i < NIBSSJSONFile.length; i++) {
+    const file = NIBSSJSONFile[i];
+    console.log("--------------------------------------------------");
 
-  console.log("Current file ", NIBSSFILE);
-  console.log("Reading file into memory");
+    const { Product: PRODUCT, Direction: DIRECTION, File: NIBSSFILE } = file;
 
-  const { jsonArray } = await ReadCSV(NIBSSFILE).then((result) => {
-    return result;
-  });
+    console.log("Current file ", NIBSSFILE);
+    console.log("Reading file into memory");
 
-  console.log("Done");
-  console.log("Inserting transactions to DB");
+    const { jsonArray } = await ReadCSV(NIBSSFILE).then((result) => {
+      return result;
+    });
 
-  const newColumnArray = columns
-    .filter((col) => col !== "SN")
-    .concat("PRODUCT")
-    .concat("DIRECTION");
+    console.log("Done");
+    console.log("Inserting transactions to DB");
 
-  let TotalInsertValues = ``;
+    const newColumnArray = columns
+      .filter((col) => col !== "SN")
+      .concat("PRODUCT")
+      .concat("DIRECTION");
 
-  let BulkInsertValues = [];
+    let TotalInsertValues = ``;
 
-  let interval = 800;
+    let BulkInsertValues = [];
 
-  //Looping through JSON-Array from CSV File
-  for (let i = 0; i < jsonArray.length; i++) {
-    let TransactionObject = {
-      ...jsonArray[i],
-      PRODUCT,
-      DIRECTION,
-    };
+    let interval = 800;
 
-    const items = Object.values(TransactionObject).slice(1);
+    //Looping through JSON-Array from CSV File
+    for (let i = 0; i < jsonArray.length; i++) {
+      let TransactionObject = {
+        ...jsonArray[i],
+        PRODUCT,
+        DIRECTION,
+      };
 
-    const FormattedValues = await FormatInsertValues(items);
+      const items = Object.values(TransactionObject).slice(1);
 
-    if (
-      items.includes("'SESSION ID'") ||
-      items.includes("'ORIGINATOR / BILLER'") ||
-      items.includes("'AMOUNT'") ||
-      items.includes("'TRANSACTION TYPE'") ||
-      items.includes("'TRANSACTION VOLUME'") ||
-      items.includes("'TOTAL AMOUNT (N)'")
-    ) {
-      //skip
-    } else {
-      if (FormattedValues.length === newColumnArray.length) {
-        TotalInsertValues = TotalInsertValues + `(${FormattedValues}),\n`;
-        if (i === interval) {
-          BulkInsertValues.push([TotalInsertValues]);
-          TotalInsertValues = "";
-          interval += 800;
+      const FormattedValues = await FormatInsertValues(items);
+
+      if (
+        items.includes("'SESSION ID'") ||
+        items.includes("'ORIGINATOR / BILLER'") ||
+        items.includes("'AMOUNT'") ||
+        items.includes("'TRANSACTION TYPE'") ||
+        items.includes("'TRANSACTION VOLUME'") ||
+        items.includes("'TOTAL AMOUNT (N)'")
+      ) {
+        //skip
+      } else {
+        if (FormattedValues.length === newColumnArray.length) {
+          TotalInsertValues = TotalInsertValues + `(${FormattedValues}),\n`;
+          if (i === interval) {
+            BulkInsertValues.push([TotalInsertValues]);
+            TotalInsertValues = "";
+            interval += 800;
+          }
         }
       }
     }
-  }
 
-  BulkInsertValues.push([TotalInsertValues]);
+    BulkInsertValues.push([TotalInsertValues]);
 
-  try {
-    await InsertBulkTransactionToDB(BulkInsertValues);
+    try {
+      await InsertBulkTransactionToDB(BulkInsertValues);
+    } catch (error) {
+      throw error;
+    }
+    await timer(delay);
     console.log("Done");
-  } catch (error) {
-    throw error;
+    NIBSSJSONFile.length > 1 && console.log("Next file...");
   }
+}
 
- 
-});
+LoopFiles();
+
+//NIBSSJSONFile.forEach(async (file) => {});
+
+//Close SQL DB Connection
+const close_timeout =
+  NIBSSJSONFile.length > 1
+    ? 1_800_000
+    : 360_000(
+        //Settimeout
+        () => {
+          setTimeout(async () => {
+            await conn.close();
+          }, close_timeout);
+        }
+      )();
