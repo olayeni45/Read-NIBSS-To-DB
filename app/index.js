@@ -56,8 +56,20 @@ const InsertBulkTransactionToDB = async (BulkTransactionArray) => {
 
 await ConnectToSQLDB();
 
+//Close SQL DB Connection
+const close_timeout =
+  NIBSSJSONFile.length > 1 ? delay * (NIBSSJSONFile.length + 1) : 360_000;
+
+//Settimeout
+setTimeout(async () => {
+  console.log("Closing SQL DB Connection");
+
+  await conn.close();
+
+  console.log("Connection closed.");
+}, close_timeout);
+
 //Looping through each NIBSS file
-const delay = 300_000;
 const timer = (ms) => new Promise((res) => setTimeout(res, ms));
 
 async function LoopFiles() {
@@ -145,20 +157,3 @@ async function LoopFiles() {
 }
 
 LoopFiles();
-
-//NIBSSJSONFile.forEach(async (file) => {});
-
-//Close SQL DB Connection
-const close_timeout =
-  NIBSSJSONFile.length > 1
-    ? delay * NIBSSJSONFile.length
-    : 360_000(
-        //Settimeout
-        () => {
-          setTimeout(async () => {
-            console.log("Closing SQL DB Connection");
-            await conn.close();
-            console.log("Connection closed.");
-          }, close_timeout);
-        }
-      )();
