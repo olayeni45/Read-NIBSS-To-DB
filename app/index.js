@@ -156,7 +156,9 @@ const close_timeout =
         //Settimeout
         () => {
           setTimeout(async () => {
+            console.log("Closing SQL DB Connection");
             await conn.close();
+            console.log("Connection closed.");
           }, close_timeout);
         }
       )();
