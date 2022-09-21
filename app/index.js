@@ -58,6 +58,7 @@ const InsertBulkTransactionToDB = async (BulkTransactionArray) => {
 await ConnectToSQLDB();
 
 //Close SQL DB Connection
+const delay = 300_000;
 const close_timeout =
   NIBSSJSONFile.length > 1 ? delay * (NIBSSJSONFile.length + 1) : 360_000;
 
