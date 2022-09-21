@@ -58,9 +58,9 @@ const InsertBulkTransactionToDB = async (BulkTransactionArray) => {
 await ConnectToSQLDB();
 
 //Close SQL DB Connection
-const delay = 300_000;
+const delay = 480_000;
 const close_timeout =
-  NIBSSJSONFile.length > 1 ? delay * (NIBSSJSONFile.length + 1) : 360_000;
+  NIBSSJSONFile.length > 1 ? delay * (NIBSSJSONFile.length + 1) : 540_000;
 
 //Settimeout
 setTimeout(async () => {
@@ -105,7 +105,7 @@ async function LoopFiles() {
 
       let BulkInsertValues = [];
 
-      let interval = 800;
+      let interval = 700;
 
       //Looping through JSON-Array from CSV File
       for (let i = 0; i < jsonArray.length; i++) {
@@ -134,7 +134,7 @@ async function LoopFiles() {
             if (i === interval) {
               BulkInsertValues.push([TotalInsertValues]);
               TotalInsertValues = "";
-              interval += 800;
+              interval += 700;
             }
           }
         }
