@@ -2,16 +2,6 @@
 import fs from "fs";
 import csvtojson from "csvtojson";
 import dotenv from "dotenv";
-import {
-  SessionIDRegex,
-  RemovedApostropheString,
-  DoubleApostropheRegex,
-  DoubleApostropheRegexString,
-  ThirdRegex,
-  ThirdRegexString,
-  FourthRegex,
-} from "./regex.js";
-
 dotenv.config();
 
 //Generate Headers
@@ -102,42 +92,14 @@ const ReadCSV = async (csvfile) => {
 const FormatInsertValues = (items) => {
   for (let i = 0; i < items.length; i++) {
     let str = String(items[i]);
-
-    const noOfApostrophe = str.replace(/[^']/g, "").length;
-
-    const boolRemoveApostrophe =
-      (str.indexOf("'") !== 0 || str.indexOf("'") !== str.length) &&
-      noOfApostrophe === 1;
-
-    //Session ID & First Regex & Fifth Regex
-    if (SessionIDRegex.test(str) || boolRemoveApostrophe) {
-      items[i] = RemovedApostropheString(str);
-    }
-
-    //Second Regex
-    if (DoubleApostropheRegex.test(str)) {
-      items[i] = DoubleApostropheRegexString(str);
-    }
-
-    //Third Regex
-    if (ThirdRegex.test(str)) {
-      items[i] = ThirdRegexString(str);
-    }
-
-    //Fouth Regex
-    if (FourthRegex.test(str)) {
-      items[i] = "'" + RemovedApostropheString(str) + "'";
-    }
-
-    //Default
-    else {
-      items[i] = "'" + items[i] + "'";
-    }
+    let newString = str.replaceAll("'", "");
+    items[i] = "'" + newString + "'";
   }
   return items;
 };
 
 //SSMS Config
+const timeout = 120_000_000;
 const ssmsConfig = {
   server: process.env.HOSTNAME,
   database: process.env.DATABASE_NAME,
@@ -145,6 +107,17 @@ const ssmsConfig = {
   password: process.env.PASSWORD,
   options: {
     trustServerCertificate: true,
+  },
+  requestTimeout: timeout,
+  pool: {
+    max: 1000,
+    min: 1,
+    idleTimeoutMillis: timeout,
+    acquireTimeoutMillis: timeout,
+    createTimeoutMillis: timeout,
+    destroyTimeoutMillis: timeout,
+    reapIntervalMillis: timeout,
+    createRetryIntervalMillis: timeout,
   },
 };
 

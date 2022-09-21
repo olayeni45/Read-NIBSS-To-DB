@@ -1,5 +1,4 @@
 //Imports
-import fs from "fs";
 import sql from "mssql";
 import {
   ssmsConfig,
@@ -31,19 +30,27 @@ const ConnectToSQLDB = async () => {
 };
 
 //Insert to DB Function
-const InsertToSQLDB = async (InsertStatement, index, currentItem) => {
+const InsertToSQLDB = async (InsertStatement, index) => {
   try {
     await conn.query(InsertStatement, (error, recordSet) => {
       if (error) {
-        fs.writeFile(`InsertError-${index}.txt`, currentItem, (err) => {
-          // In case of a error throw err.
-          if (err) throw err;
-        });
+        console.log("Bulk Insert no: " + index);
         throw error;
       }
     });
   } catch (err) {
     console.log(err);
+  }
+};
+
+//Insert Bulk Transactions to DB
+const InsertBulkTransactionToDB = async (BulkTransactionArray) => {
+  for (let i = 0; i < BulkTransactionArray.length; i++) {
+    const item = BulkTransactionArray[i].toString();
+    const index = item.lastIndexOf(",");
+    const QueryValue = item.slice(0, index);
+    const InsertStatement = "INSERT INTO NIBSS VALUES\n" + QueryValue;
+    await InsertToSQLDB(InsertStatement, i);
   }
 };
 
@@ -74,7 +81,7 @@ NIBSSJSONFile.forEach(async (file) => {
 
   let BulkInsertValues = [];
 
-  let interval = 1000;
+  let interval = 800;
 
   //Looping through JSON-Array from CSV File
   for (let i = 0; i < jsonArray.length; i++) {
@@ -102,8 +109,8 @@ NIBSSJSONFile.forEach(async (file) => {
         TotalInsertValues = TotalInsertValues + `(${FormattedValues}),\n`;
         if (i === interval) {
           BulkInsertValues.push([TotalInsertValues]);
-          TotalInsertValues = ``;
-          interval += 1000;
+          TotalInsertValues = "";
+          interval += 800;
         }
       }
     }
@@ -111,12 +118,12 @@ NIBSSJSONFile.forEach(async (file) => {
 
   BulkInsertValues.push([TotalInsertValues]);
 
-  for (let i = 0; i < BulkInsertValues.length; i++) {
-    const index = BulkInsertValues[i].toString().lastIndexOf(",");
-    const QueryValue = BulkInsertValues[i].toString().slice(0, index);
-    const InsertStatement = "INSERT INTO NIBSS VALUES\n" + QueryValue;
-    await InsertToSQLDB(InsertStatement, i, BulkInsertValues[i]);
+  try {
+    await InsertBulkTransactionToDB(BulkInsertValues);
+    console.log("Done");
+  } catch (error) {
+    throw error;
   }
 
-  console.log("Done");
+ 
 });
