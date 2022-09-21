@@ -54,6 +54,9 @@ const RenameColumn = (columnArray, jsonObject) => {
 //JSON File
 const JSON_FILE = process.env.NIBSS_JSON_FILE_PATH;
 
+//Database Table Name
+const DB_TABLE = process.env.DB_TABLE_NAME;
+
 //JSON
 const ReadNIBSSJSON = (file) => {
   let hexData = fs.readFileSync(file);
@@ -106,10 +109,10 @@ const FormatInsertValues = (items) => {
 //SSMS Config
 const timeout = 100_000_000;
 const ssmsConfig = {
-  server: process.env.HOSTNAME,
-  database: process.env.DATABASE_NAME,
-  user: process.env.USER,
-  password: process.env.PASSWORD,
+  server: process.env.SQL_SERVER_NAME,
+  database: process.env.DB_NAME,
+  user: process.env.DB_USER,
+  password: process.env.DB_USER_PASSWORD,
   options: {
     trustServerCertificate: true,
   },
@@ -135,4 +138,5 @@ export {
   columns,
   FormatInsertValues,
   JSON_FILE,
+  DB_TABLE
 };

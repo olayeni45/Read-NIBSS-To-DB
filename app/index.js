@@ -7,6 +7,7 @@ import {
   columns,
   JSON_FILE,
   FormatInsertValues,
+  DB_TABLE
 } from "./helpers/util.js";
 
 //SQL Connection
@@ -49,7 +50,7 @@ const InsertBulkTransactionToDB = async (BulkTransactionArray) => {
     const item = BulkTransactionArray[i].toString();
     const index = item.lastIndexOf(",");
     const QueryValue = item.slice(0, index);
-    const InsertStatement = "INSERT INTO NIBSS VALUES\n" + QueryValue;
+    const InsertStatement = "INSERT INTO " + DB_TABLE + " VALUES\n" + QueryValue;
     await InsertToSQLDB(InsertStatement, i);
   }
 };
