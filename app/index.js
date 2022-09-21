@@ -68,69 +68,79 @@ async function LoopFiles() {
     const { Product: PRODUCT, Direction: DIRECTION, File: NIBSSFILE } = file;
 
     console.log("Current file ", NIBSSFILE);
-    console.log("Reading file into memory");
 
-    const { jsonArray } = await ReadCSV(NIBSSFILE).then((result) => {
-      return result;
-    });
+    const { jsonArray, fileExists } = await ReadCSV(NIBSSFILE).then(
+      (result) => {
+        return result;
+      }
+    );
 
-    console.log("Done");
-    console.log("Inserting transactions to DB");
+    if (fileExists) {
+      console.log("Reading file into memory");
 
-    const newColumnArray = columns
-      .filter((col) => col !== "SN")
-      .concat("PRODUCT")
-      .concat("DIRECTION");
+      console.log("Done");
 
-    let TotalInsertValues = ``;
+      console.log("Inserting transactions to DB");
 
-    let BulkInsertValues = [];
+      const newColumnArray = columns
+        .filter((col) => col !== "SN")
+        .concat("PRODUCT")
+        .concat("DIRECTION");
 
-    let interval = 800;
+      let TotalInsertValues = ``;
 
-    //Looping through JSON-Array from CSV File
-    for (let i = 0; i < jsonArray.length; i++) {
-      let TransactionObject = {
-        ...jsonArray[i],
-        PRODUCT,
-        DIRECTION,
-      };
+      let BulkInsertValues = [];
 
-      const items = Object.values(TransactionObject).slice(1);
+      let interval = 800;
 
-      const FormattedValues = await FormatInsertValues(items);
+      //Looping through JSON-Array from CSV File
+      for (let i = 0; i < jsonArray.length; i++) {
+        let TransactionObject = {
+          ...jsonArray[i],
+          PRODUCT,
+          DIRECTION,
+        };
 
-      if (
-        items.includes("'SESSION ID'") ||
-        items.includes("'ORIGINATOR / BILLER'") ||
-        items.includes("'AMOUNT'") ||
-        items.includes("'TRANSACTION TYPE'") ||
-        items.includes("'TRANSACTION VOLUME'") ||
-        items.includes("'TOTAL AMOUNT (N)'")
-      ) {
-        //skip
-      } else {
-        if (FormattedValues.length === newColumnArray.length) {
-          TotalInsertValues = TotalInsertValues + `(${FormattedValues}),\n`;
-          if (i === interval) {
-            BulkInsertValues.push([TotalInsertValues]);
-            TotalInsertValues = "";
-            interval += 800;
+        const items = Object.values(TransactionObject).slice(1);
+
+        const FormattedValues = await FormatInsertValues(items);
+
+        if (
+          items.includes("'SESSION ID'") ||
+          items.includes("'ORIGINATOR / BILLER'") ||
+          items.includes("'AMOUNT'") ||
+          items.includes("'TRANSACTION TYPE'") ||
+          items.includes("'TRANSACTION VOLUME'") ||
+          items.includes("'TOTAL AMOUNT (N)'")
+        ) {
+          //skip
+        } else {
+          if (FormattedValues.length === newColumnArray.length) {
+            TotalInsertValues = TotalInsertValues + `(${FormattedValues}),\n`;
+            if (i === interval) {
+              BulkInsertValues.push([TotalInsertValues]);
+              TotalInsertValues = "";
+              interval += 800;
+            }
           }
         }
       }
-    }
 
-    BulkInsertValues.push([TotalInsertValues]);
+      BulkInsertValues.push([TotalInsertValues]);
 
-    try {
-      await InsertBulkTransactionToDB(BulkInsertValues);
-    } catch (error) {
-      throw error;
+      try {
+        await InsertBulkTransactionToDB(BulkInsertValues);
+      } catch (error) {
+        throw error;
+      }
+      await timer(delay);
+
+      console.log("Done");
+
+      NIBSSJSONFile.length > 1 &&
+        i !== NIBSSJSONFile.length &&
+        console.log("Next file...");
     }
-    await timer(delay);
-    console.log("Done");
-    NIBSSJSONFile.length > 1 && console.log("Next file...");
   }
 }
 
@@ -141,7 +151,7 @@ LoopFiles();
 //Close SQL DB Connection
 const close_timeout =
   NIBSSJSONFile.length > 1
-    ? 1_800_000
+    ? delay * NIBSSJSONFile.length
     : 360_000(
         //Settimeout
         () => {

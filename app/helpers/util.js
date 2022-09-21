@@ -63,29 +63,34 @@ const ReadNIBSSJSON = (file) => {
 
 //Read CSV
 const ReadCSV = async (csvfile) => {
-  const jsonArray = await csvtojson()
-    .fromFile(csvfile)
-    .then((file) => {
-      return file;
-    });
+  try {
+    const jsonArray = await csvtojson()
+      .fromFile(csvfile)
+      .then((file) => {
+        return file;
+      });
 
-  let startingRow = 0;
+    let startingRow = 0;
 
-  for (let i = 0; i < jsonArray.length; i++) {
-    const isHeader = generateHeaders(jsonArray[i]);
-    if (isHeader) {
-      startingRow = i;
-      break;
+    for (let i = 0; i < jsonArray.length; i++) {
+      const isHeader = generateHeaders(jsonArray[i]);
+      if (isHeader) {
+        startingRow = i;
+        break;
+      }
     }
+
+    jsonArray.splice(0, startingRow);
+
+    for (let i = startingRow; i < jsonArray.length; i++) {
+      jsonArray[i] = RenameColumn(columns, jsonArray[i]);
+    }
+
+    return { fileExists: true, jsonArray };
+  } catch (error) {
+    console.log(csvfile + " does not exist.");
+    return { fileExists: false, jsonArray: null };
   }
-
-  jsonArray.splice(0, startingRow);
-
-  for (let i = startingRow; i < jsonArray.length; i++) {
-    jsonArray[i] = RenameColumn(columns, jsonArray[i]);
-  }
-
-  return { jsonArray };
 };
 
 //Format INSERT Values
