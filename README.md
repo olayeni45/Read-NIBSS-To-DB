@@ -1,7 +1,7 @@
 
 # Read NIBSS Files To SQL DB
 
-This is a Node.js backend application that reads in a json file containing an array of Nigeria Inter-Bank Settlement System Plc (NIBSS) files and inserts them into a Microsoft SQL Server Management Studio database (SSMS).
+This is a backend Node.js application that reads in a json file containing an array of Nigeria Inter-Bank Settlement System Plc (NIBSS) files and inserts them into a Microsoft SQL Server Management Studio database (SSMS).
 ## Authors
 
 - [@Olayeni Anifowose](https://github.com/olayeni45)
