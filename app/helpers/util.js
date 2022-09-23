@@ -117,8 +117,9 @@ const ssmsConfig = {
     trustServerCertificate: true,
   },
   requestTimeout: timeout,
+  connectionTimeout: timeout,
   pool: {
-    max: 1000,
+    max: 10_000,
     min: 1,
     idleTimeoutMillis: timeout,
     acquireTimeoutMillis: timeout,
@@ -138,5 +139,5 @@ export {
   columns,
   FormatInsertValues,
   JSON_FILE,
-  DB_TABLE
+  DB_TABLE,
 };

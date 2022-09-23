@@ -69,12 +69,14 @@ setTimeout(async () => {
   await conn.close();
 
   console.log("Connection closed.");
+  console.log("End: ", new Date().toLocaleString())
 }, close_timeout);
 
 //Looping through each NIBSS file
 const timer = (ms) => new Promise((res) => setTimeout(res, ms));
 
 async function LoopFiles() {
+  console.log("Start: ", new Date().toLocaleString())
   for (let i = 0; i < NIBSSJSONFile.length; i++) {
     const file = NIBSSJSONFile[i];
     console.log("--------------------------------------------------");
